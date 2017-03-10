@@ -13,11 +13,13 @@ const char *password = "";
 ESP8266WebServer server(8080);
 ESP8266WebServer server_8080(8080);
 
-
+//DRV8835 port assign
 #define AIN1 14
 #define AIN2 13
 #define BIN1 4
 #define BIN2 5
+
+//Fire LED assign
 #define fire_LED_ON       (digitalWrite( 16, LOW ))
 #define fire_LED_OFF       (digitalWrite( 16, HIGH ))
 
@@ -29,7 +31,7 @@ unsigned char drive_mode = 0;
 boolean action = 0;
 
 //http://192.168.4.1:8080
-
+//HTML User interface
 String form ="<html>"
 "<head><meta name=viewport content=width=device-width></head>"
 "<head>"
@@ -49,6 +51,16 @@ String form ="<html>"
 "</center>"
 "</div></html>";
 
+//Motor DriverDRV8835 Control
+/*
+    drive mode0 : stop
+    drive mode1 : forward
+    drive mode2 : back
+    drive mode3 : R left turn
+    drive mode4 : R right turn
+    drive mode5 : left turn
+    drive mode6 : right turn
+*/
 
 void DRV8835_Control(){
     if (drive_mode == 0){
@@ -104,16 +116,19 @@ void DRV8835_Control(){
 
 }
 
-/* Just a little test message.  Go to http://192.168.4.1 in a web browser
+/* Just a little test message.  Go to http://192.168.4.1:8080 in a web browser
  * connected to this access point to see it.
  */
 void setup() {
+
+//port define
   pinMode(16,OUTPUT);
   fire_LED_ON;
   
   delay(1000);
   fire_LED_OFF;
-  
+
+//Serial setup
   Serial.begin(115200);
   Serial.println();
   Serial.print("Configuring access point...");
@@ -126,6 +141,7 @@ void setup() {
   Serial.print("AP IP address: ");
   Serial.println(myIP);
 
+//UI control    
   server.on("/", handleRoot);
   server.on("/stop", handle_stop);
   server.on("/forward", handle_forward);
@@ -139,31 +155,22 @@ void setup() {
  
   server.begin();
   server_8080.begin();
-  
- /*
-  server_8080.on("/stop", handle_stop);
-  server_8080.on("/forward", handle_forward);
-  server_8080.on("/back", handle_back);
-  server_8080.on("/left", handle_left);
-  server_8080.on("/right", handle_right);
-  server_8080.on("/turn", handle_turn);
-  server_8080.on("/fire", handle_fire);
- 
-*/  
+   
   Serial.println("HTTP server started");
 }
 
+//main loop
 void loop() {
   server.handleClient();
 }
 
-
+//No control
 void handleRoot() {
   action = 0;
   server.send(200, "text/html", form);
 }
 
-
+//Tank stop
 void handle_stop() {
   Serial.println("stop");
   drive_mode = 0;
@@ -172,6 +179,7 @@ void handle_stop() {
   server.send(200, "text/html", form);
 }
 
+//Tank forward
 void handle_forward() {
   Serial.println("forward");
   drive_mode = 1;
@@ -180,6 +188,7 @@ void handle_forward() {
   server.send(200, "text/html", form);
 }
 
+//Tank Back
 void handle_back() {
   Serial.println("back");
   drive_mode = 2;
@@ -188,6 +197,7 @@ void handle_back() {
   server.send(200, "text/html", form);
 }
 
+//Tank left turn
 void handle_left() {
   action=1;  
   if(action) {  
@@ -200,6 +210,7 @@ void handle_left() {
   server.send(200, "text/html", form);
 }
 
+//Tank right turn
 void handle_right() {
   action=1;  
   if(action) {  
@@ -213,6 +224,7 @@ void handle_right() {
  
 }
 
+//Tank rapid turn
 void handle_turn() {
   Serial.println("turn");
   drive_mode = 4;
@@ -221,6 +233,7 @@ void handle_turn() {
   server.send(200, "text/html", form);
 }
 
+//Tank fire action
 void handle_fire() {
   action=1;  
   if(action) {  
@@ -241,6 +254,7 @@ void handle_fire() {
   server.send(200, "text/html", form);
 }
 
+//Tank speed up(DRV8835 PWM change)
 void handle_fast() {
   action=1;  
   if(action) {    
@@ -255,6 +269,7 @@ void handle_fast() {
   server.send(200, "text/html", form);
 }
 
+//Tank speed down(DRV8835 PWM change)
 void handle_slow() {
   action=1;
   if(action) {      
